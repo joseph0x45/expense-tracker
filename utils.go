@@ -103,3 +103,15 @@ func saveFlow(f *flow) {
 	}
 	fmt.Println("Flow saved successfully!")
 }
+
+func getAllFlows() []flow {
+	db := getDBConnection()
+	defer db.Close()
+	data := make([]flow, 0)
+	err := db.Select(&data, "select * from flows")
+	if err != nil {
+		fmt.Println("Error while getting all flows:", err.Error())
+		return nil
+	}
+	return data
+}

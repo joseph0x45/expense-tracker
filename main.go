@@ -174,6 +174,11 @@ func main() {
 		}
 		saveFlow(newFlow)
 	case "list":
-
+    data := getAllFlows()
+    if data != nil {
+      for _, flow := range(data){
+        fmt.Println(flow)
+      }
+    }
 	}
 }
