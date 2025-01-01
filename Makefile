@@ -5,3 +5,7 @@ build:
 
 delete-db:
 	rm $$HOME/.cashflow.db
+
+test-direct-mode:
+	@./$(BINARY) new -type=in -amount=100 -method='mobile money' \
+		-planned=false -purpose='some lnog aaaah string'

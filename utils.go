@@ -73,13 +73,13 @@ func trimLineFeed(str *string) {
 }
 
 func printFlow(f *flow) {
-  fmt.Printf("##########################")
+	fmt.Println("##########################")
 	fmt.Printf("Flow Type: %s\n", f.FlowType)
 	fmt.Printf("Amount: %d\n", f.Amount)
 	fmt.Printf("Created At: %s\n", f.CreatedAt)
 	fmt.Printf("Method: %s\n", f.Method)
 	fmt.Printf("Planned: %s\n", f.Planned)
-  fmt.Printf("##########################")
+	fmt.Println("##########################")
 }
 
 func getDBConnection() *sqlx.DB {
