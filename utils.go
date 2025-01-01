@@ -40,7 +40,17 @@ func initDB() {
       method text not null,
       planned text not null,
       purpose text not null
+    );
+    create table if not exists accounts (
+      id text not null primary key,
+      balance integer not null
+    );
+    insert into accounts (
+      id, balance
     )
+    values (
+      'main', 0
+    );
   `
 	db, err := sqlx.Connect("sqlite3", getDBFilePath())
 	defer db.Close()
@@ -91,17 +101,71 @@ func getDBConnection() *sqlx.DB {
 	return db
 }
 
+func getCurrentBalance() int {
+	balance := 0
+	query := `
+    select balance from accounts where id='main'
+  `
+	db := getDBConnection()
+	if db == nil {
+		os.Exit(1)
+	}
+	err := db.QueryRow(query).Scan(&balance)
+	if err != nil {
+		fmt.Println("Error while getting current balance:", err.Error())
+		db.Close()
+		os.Exit(1)
+	}
+	db.Close()
+	return balance
+}
+
 func saveFlow(f *flow) {
 	db := getDBConnection()
 	if db == nil {
 		os.Exit(1)
 	}
-	_, err := db.NamedExec(insertFlowQuery, f)
+	tx, err := db.Beginx()
 	if err != nil {
-		fmt.Println("Failed to save flow:", err.Error())
+		fmt.Println("Error while starting transaction:", err.Error())
+	}
+	currentBalance := getCurrentBalance()
+	newBalance := 0
+	if f.FlowType == "in" {
+		newBalance = currentBalance + f.Amount
+	} else {
+		newBalance = currentBalance - f.Amount
+		if newBalance < 0 {
+			fmt.Println("Your balance can not be less than 0. Cash flow will not be saved!")
+			db.Close()
+			os.Exit(1)
+		}
+	}
+	updateBalanceQuery := `
+    update accounts set balance=$1
+    where id='main'
+  `
+	_, err = tx.Exec(updateBalanceQuery, newBalance)
+	if err != nil {
+		fmt.Println("Error while updating balance:", err.Error())
+		tx.Rollback()
+		db.Close()
 		os.Exit(1)
 	}
+	_, err = tx.NamedExec(insertFlowQuery, f)
+	if err != nil {
+		fmt.Println("Failed to save flow:", err.Error())
+		tx.Rollback()
+		db.Close()
+		os.Exit(1)
+	}
+	err = tx.Commit()
+	if err != nil {
+		fmt.Println("Failed to save flow:", err.Error())
+	}
 	fmt.Println("Flow saved successfully!")
+	fmt.Println("Your balance after this flow:", newBalance)
+	db.Close()
 }
 
 func getAllFlows() []flow {
