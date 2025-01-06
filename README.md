@@ -15,3 +15,6 @@ This is just a little terminal tool I made to keep track of my money.
 - [ ] View the total amount of a specific type of cash flow
 - [ ] View the biggest cash flow by method(mobile money, cash, bank)
 - [ ] View balance on a specific day
+
+## Todo
+- [ ] Refactor and get rid of all these os.Exit calls

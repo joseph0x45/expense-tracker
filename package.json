@@ -1,0 +1,23 @@
+{
+  "name": "cashflow-logger",
+  "version": "1.0.0",
+  "description": "This is just a little terminal tool I made to keep track of my money.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joseph0x45/cashflow.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/joseph0x45/cashflow/issues"
+  },
+  "homepage": "https://github.com/joseph0x45/cashflow#readme",
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}
