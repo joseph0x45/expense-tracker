@@ -1,26 +1,55 @@
 package main
 
 import (
+	"embed"
+	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
-	"text/template"
+	"os"
 	"time"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/joho/godotenv"
 )
 
-type film struct {
-	Title    string
-	Director string
+type config struct {
+	TemplatesDir string
+	Port         string
+	DB           *sqlx.DB
 }
 
-func renderHomePage(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("./home.html"))
-	tmpl.Execute(w, nil)
+//go:embed web/*
+var webFS embed.FS
+
+var staticServer http.Handler
+
+func init() {
+	publicFS, err := fs.Sub(webFS, "public")
+	if err != nil {
+		panic(err)
+	}
+	staticServer = http.FileServer(http.FS(publicFS))
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	envFilePath := fmt.Sprintf("%s.cashflow-logger.env", homeDir)
+	godotenv.Load(envFilePath)
+	// if err != nil {
+	// 	log.Println("Failed to load configuration file at", envFilePath)
+	// 	fmt.Println("Run cashflow-logger init to create the file with default values")
+	// 	os.Exit(1)
+	// }
 }
 
 func main() {
 	mux := http.NewServeMux()
 
-	mux.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
+	mux.Handle(
+		"/public/",
+		staticServer,
+	)
 
 	mux.HandleFunc("/", renderHomePage)
 
