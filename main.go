@@ -23,7 +23,7 @@ var (
 	frontend embed.FS
 )
 
-var isDev = true
+var buildMode = "prod"
 
 func init() {
 	userHomeDir, err := os.UserHomeDir()
@@ -47,7 +47,8 @@ func main() {
 	port := flag.String("port", "8080", "Port on which to launch the app")
 	flag.Parse()
 	mux := http.NewServeMux()
-	if isDev {
+	if buildMode == "dev" {
+    log.Println("Running in dev mode")
 		frontendURL, err := url.Parse("http://localhost:5173")
 		if err != nil {
 			panic(err)
