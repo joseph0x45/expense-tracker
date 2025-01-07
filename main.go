@@ -2,47 +2,67 @@ package main
 
 import (
 	"embed"
+	"flag"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/joho/godotenv"
+	_ "github.com/mattn/go-sqlite3"
 )
 
-type config struct {
-	Port         string
-	DB           *sqlx.DB
-}
+var (
+	DB *sqlx.DB
 
-//go:embed web/*
-var templateFS embed.FS
+	//go:embed frontend/dist
+	frontend embed.FS
+)
 
-//go:embed web/public/*
-var publicFS embed.FS
+var isDev = true
 
 func init() {
-	homeDir, err := os.UserHomeDir()
+	userHomeDir, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
 	}
-	envFilePath := fmt.Sprintf("%s.cashflow-logger.env", homeDir)
-	godotenv.Load(envFilePath)
+	dbFilePath := fmt.Sprintf("%s/.cashflow.db", userHomeDir)
+	_, err = os.Stat(dbFilePath)
+	if os.IsNotExist(err) {
+		initDB(dbFilePath)
+	} else {
+		DB, err = sqlx.Connect("sqlite3", dbFilePath)
+		if err != nil {
+			panic(err)
+		}
+	}
+	log.Println("Connected to database")
 }
 
 func main() {
+	port := flag.String("port", "8080", "Port on which to launch the app")
+	flag.Parse()
 	mux := http.NewServeMux()
-
-	mux.HandleFunc("/public/output.css/{$}", func(w http.ResponseWriter, r *http.Request) {
-    http.ServeFileFS(w, r, publicFS, "output.css")
-	})
-
-	mux.HandleFunc("/home", renderHomePage)
+	if isDev {
+		frontendURL, err := url.Parse("http://localhost:5173")
+		if err != nil {
+			panic(err)
+		}
+		proxy := httputil.NewSingleHostReverseProxy(frontendURL)
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			proxy.ServeHTTP(w, r)
+		})
+	} else {
+		dist, _ := fs.Sub(frontend, "frontend/dist")
+		mux.Handle("/", http.FileServer(http.FS(dist)))
+	}
 
 	server := http.Server{
-		Addr:         ":8080",
+		Addr:         fmt.Sprintf(":%s", *port),
 		ReadTimeout:  time.Minute,
 		WriteTimeout: time.Minute,
 		IdleTimeout:  time.Minute,
