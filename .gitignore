@@ -26,5 +26,9 @@ go.work.sum
 *.out
 node_modules/
 tmp/
+<<<<<<< HEAD
 output.css
 dist/
+=======
+public/output.css
+>>>>>>> parent of d79ef98 (little bit of refactoring)

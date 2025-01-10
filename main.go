@@ -1,12 +1,16 @@
 package main
 
 import (
+<<<<<<< HEAD
 	"flag"
 	"fmt"
+=======
+>>>>>>> parent of d79ef98 (little bit of refactoring)
 	"log"
 	"net/http"
-	"os"
+	"text/template"
 	"time"
+<<<<<<< HEAD
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
@@ -32,6 +36,18 @@ func init() {
 		}
 	}
 	log.Println("Connected to database")
+=======
+)
+
+type film struct {
+	Title    string
+	Director string
+}
+
+func renderHomePage(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseFiles("./home.html"))
+	tmpl.Execute(w, nil)
+>>>>>>> parent of d79ef98 (little bit of refactoring)
 }
 
 func main() {
@@ -39,6 +55,13 @@ func main() {
 	flag.Parse()
 	mux := http.NewServeMux()
 
+<<<<<<< HEAD
+=======
+	mux.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
+
+	mux.HandleFunc("/", renderHomePage)
+
+>>>>>>> parent of d79ef98 (little bit of refactoring)
 	server := http.Server{
 		Addr:         fmt.Sprintf(":%s", *port),
 		ReadTimeout:  time.Minute,
