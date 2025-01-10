@@ -1,16 +1,20 @@
 package main
 
 import (
-<<<<<<< HEAD
 	"flag"
 	"fmt"
-=======
->>>>>>> parent of d79ef98 (little bit of refactoring)
 	"log"
 	"net/http"
 	"text/template"
-	"time"
-<<<<<<< HEAD
+	"embed"
+	"flag"
+	"fmt"
+	"io/fs"
+	"log"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
+	"os"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
@@ -18,7 +22,12 @@ import (
 
 var (
 	DB *sqlx.DB
+
+	//go:embed frontend/dist
+	frontend embed.FS
 )
+
+var buildMode = "prod"
 
 func init() {
 	userHomeDir, err := os.UserHomeDir()
@@ -36,7 +45,6 @@ func init() {
 		}
 	}
 	log.Println("Connected to database")
-=======
 )
 
 type film struct {
@@ -47,21 +55,31 @@ type film struct {
 func renderHomePage(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("./home.html"))
 	tmpl.Execute(w, nil)
->>>>>>> parent of d79ef98 (little bit of refactoring)
 }
 
 func main() {
 	port := flag.String("port", "8080", "Port on which to launch the app")
 	flag.Parse()
 	mux := http.NewServeMux()
+	if buildMode == "dev" {
+    log.Println("Running in dev mode")
+		frontendURL, err := url.Parse("http://localhost:5173")
+		if err != nil {
+			panic(err)
+		}
+		proxy := httputil.NewSingleHostReverseProxy(frontendURL)
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			proxy.ServeHTTP(w, r)
+		})
+	} else {
+		dist, _ := fs.Sub(frontend, "frontend/dist")
+		mux.Handle("/", http.FileServer(http.FS(dist)))
+	}
 
-<<<<<<< HEAD
-=======
 	mux.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
 
 	mux.HandleFunc("/", renderHomePage)
 
->>>>>>> parent of d79ef98 (little bit of refactoring)
 	server := http.Server{
 		Addr:         fmt.Sprintf(":%s", *port),
 		ReadTimeout:  time.Minute,
