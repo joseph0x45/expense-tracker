@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -16,10 +17,28 @@ import (
 )
 
 var (
-	DB      *sqlx.DB
+	DB *sqlx.DB
 	//go:embed frontend/dist
 	frontend embed.FS
 )
+
+func init() {
+	userHomeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	dbFilePath := fmt.Sprintf("%s/.cashflow.db", userHomeDir)
+	_, err = os.Stat(dbFilePath)
+	if os.IsNotExist(err) {
+		initDB(dbFilePath)
+	} else {
+		DB, err = sqlx.Connect("sqlite3", dbFilePath)
+		if err != nil {
+			panic(err)
+		}
+	}
+	log.Println("Connected to database")
+}
 
 var buildMode = "prod"
 
@@ -41,6 +60,8 @@ func main() {
 		dist, _ := fs.Sub(frontend, "frontend/dist")
 		mux.Handle("/", http.FileServer(http.FS(dist)))
 	}
+
+	mux.HandleFunc("POST /api/accounts", createAccount)
 
 	server := http.Server{
 		Addr:         fmt.Sprintf(":%s", *port),
