@@ -1,15 +1,16 @@
 package main
 
 import (
-	"embed"
 	"flag"
 	"fmt"
-	"io/fs"
 	"log"
 	"net/http"
+<<<<<<< HEAD
 	"net/http/httputil"
 	"net/url"
 	"os"
+=======
+>>>>>>> refs/remotes/origin/main
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -18,6 +19,7 @@ import (
 
 var (
 	DB *sqlx.DB
+<<<<<<< HEAD
 	//go:embed frontend/dist
 	frontend embed.FS
 )
@@ -42,11 +44,16 @@ func init() {
 
 var buildMode = "prod"
 
+=======
+)
+
+>>>>>>> refs/remotes/origin/main
 func main() {
 	port := flag.String("port", "8080", "Port on which to launch the app")
 	flag.Parse()
 	mux := http.NewServeMux()
 
+<<<<<<< HEAD
 	if buildMode == "dev" {
 		frontendURL, err := url.Parse("http://localhost:5173")
 		if err != nil {
@@ -63,6 +70,8 @@ func main() {
 
 	mux.HandleFunc("POST /api/accounts", createAccount)
 
+=======
+>>>>>>> refs/remotes/origin/main
 	server := http.Server{
 		Addr:         fmt.Sprintf(":%s", *port),
 		ReadTimeout:  time.Minute,
