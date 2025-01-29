@@ -4,7 +4,6 @@ import (
 	"embed"
 	"flag"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -25,6 +24,9 @@ var (
 
 	//go:embed output.css
 	outputCSS embed.FS
+
+	//go:embed *.html
+	viewsFS embed.FS
 )
 
 func serveContentHandler(w http.ResponseWriter, r *http.Request) {
@@ -67,23 +69,9 @@ func main() {
 	DB.SetMaxOpenConns(1)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /output.css", func(w http.ResponseWriter, r *http.Request) {
-		f, err := outputCSS.Open("output.css")
-		if err != nil {
-			http.Error(w, "File not found", http.StatusNotFound)
-			return
-		}
-		defer f.Close()
-		http.ServeFileFS(w, r, outputCSS, "output.css")
-	})
-	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		template, err := template.ParseFiles("./index.html")
-		if err != nil {
-			log.Println(err.Error())
-			return
-		}
-		template.Execute(w, nil)
-	})
+	mux.HandleFunc("GET /output.css", serveCSS)
+	mux.HandleFunc("GET /", renderHomePage)
+	mux.HandleFunc("POST /api/accounts", handleAccountCreation)
 
 	server := http.Server{
 		Addr:         fmt.Sprintf(":%d", *port),

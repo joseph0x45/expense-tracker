@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func getAllAccounts() ([]Account, error) {
 	data := make([]Account, 0)

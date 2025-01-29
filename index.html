@@ -4,11 +4,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Tracker v1.0</title>
   <link href="/output.css" rel="stylesheet">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
 </head>
 
-<body>
-  <h1 class="text-2xl text-red-400 font-extrabold underline"> Hello world! </h1>
+<body class="mx-auto w-1/2 h-screen">
+  <div class="py-8">
+    <h1 class="text-4xl font-bold">Accounts</h1>
+    <h1 class="text-gray-500">Track your account balances and transactions</h1>
+  </div>
+  <div class="flex flex-col gap-8">
+    <form hx-post="/api/accounts" hx-target="#accounts-list" hx-swap="beforeend" class="flex gap-2">
+      <input required name="label" type="text"
+        class="flex-[3] rounded-md border-1 border-gray-300 p-2 focus:outline-none" placeholder="Account label" />
+      <input required inputmode="numeric" min="100" pattern="" name="threshold" type="number" step="100"
+        class="flex-[2] rounded-md border-1 border-gray-300 p-2 focus:outline-none"
+        placeholder="Account balance threshold" />
+      <button type="submit"
+        class="cursor-pointer flex justify-center items-center gap-2 flex-[1] bg-black text-white rounded-md p-2">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+          <path
+            d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+        </svg>
+        <h1>Add Account</h1>
+      </button>
+    </form>
+    <div id="accounts-list" class="flex flex-col gap-4">
+      {{range .Accounts}}
+      <a href="/accounts/{{.ID}}/transactions"
+        class="shadow-sm flex justify-between w-full px-2 py-4 rounded-md border-1 border-gray-300">
+        <h1 class="font-semibold">{{.Label}}</h1>
+        <h1 class="{{if lt .Balance .Threshold}}text-red-500{{else}}text-green-400{{end}}">
+          {{.Balance}} XOF
+        </h1>
+      </a>
+      {{end}}
+    </div>
+    <footer>Expense Tracker v1.0 - <a target="_blank" class="text-blue-400 underline"
+        href="https://github.com/joseph0x45/expense-tracker">GitHub</a>
+    </footer>
+
+  </div>
 </body>
+<script>
+  document.addEventListener("htmx:beforeSwap", function (event) {
+    const errorDiv = document.getElementById("error-message");
+    if (errorDiv) {
+      errorDiv.remove();
+    }
+  });
+</script>
 
 </html>

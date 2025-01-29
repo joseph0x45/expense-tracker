@@ -12,8 +12,8 @@ type Transaction struct {
 }
 
 type Account struct {
-	ID       string `json:"id" db:"id"`
-	Label    string `json:"label" db:"label"`
-	Balance  int    `json:"balance" db:"balance"`
-	Treshold int    `json:"treshold" db:"treshold"`
+	ID        string `json:"id" db:"id"`
+	Label     string `json:"label" db:"label"`
+	Balance   int    `json:"balance" db:"balance"`
+	Threshold int    `json:"treshold" db:"treshold"`
 }
