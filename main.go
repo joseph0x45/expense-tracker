@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -18,6 +19,7 @@ const (
 
 var (
 	Verbose = false
+	DB      *sqlx.DB
 )
 
 func main() {
@@ -35,6 +37,12 @@ func main() {
 		panic(err)
 	}
 	log.Println("Starting Expense Tracker", version, " on port", *port)
+	DB, err = sqlx.Connect("sqlite3", *dbFilePath)
+	if err != nil {
+		panic(err.Error())
+	}
+  defer DB.Close()
+  DB.SetMaxOpenConns(1)
 	mux := http.NewServeMux()
 
 	server := http.Server{
