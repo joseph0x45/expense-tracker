@@ -2,7 +2,7 @@ package main
 
 import "time"
 
-type Flow struct {
+type Transaction struct {
 	ID        string    `json:"id" db:"id"`
 	Amount    int       `json:"amount" db:"amount"`
 	Type      string    `json:"type" db:"flow_type"`
