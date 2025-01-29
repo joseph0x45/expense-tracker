@@ -12,3 +12,9 @@ view-db:
 
 into-db:
 	sqlite3 $(DB_FILE)
+
+tailwind-compile:
+	npx @tailwindcss/cli -i ./input.css -o ./output.css
+
+tailwind-watch:
+	npx @tailwindcss/cli -i ./input.css -o ./output.css --watch

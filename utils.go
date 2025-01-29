@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/jmoiron/sqlx"
@@ -34,7 +36,8 @@ func initDB(dbFilePath string) error {
     create table accounts (
       id text not null primary key,
       label text not null unique,
-      balance integer not null default 0
+      balance integer not null default 0,
+      treshold integer not null
     );
     create table transactions (
       id text not null primary key,
@@ -50,7 +53,7 @@ func initDB(dbFilePath string) error {
 	if err != nil {
 		return fmt.Errorf("Error while creating tables: %w", err)
 	}
-  verbosePrint("Tables created! Database ready!")
+	verbosePrint("Tables created! Database ready!")
 	return nil
 }
 
@@ -100,4 +103,20 @@ func checkDBHealth(dbFilePath string) error {
 		return fmt.Errorf("Error while checking database health: %w", err)
 	}
 	return initDB(dbFilePath)
+}
+
+func writeError(w http.ResponseWriter, status int, errMsg string) {
+	bytes, _ := json.Marshal(map[string]string{
+		"error": errMsg,
+	})
+	w.WriteHeader(status)
+	w.Write(bytes)
+}
+
+func writeData(w http.ResponseWriter, status int, data any) {
+	bytes, _ := json.Marshal(map[string]interface{}{
+		"data": data,
+	})
+	w.WriteHeader(status)
+	w.Write(bytes)
 }

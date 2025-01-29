@@ -1,8 +1,10 @@
 package main
 
 import (
+	"embed"
 	"flag"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -20,7 +22,27 @@ const (
 var (
 	Verbose = false
 	DB      *sqlx.DB
+
+	//go:embed output.css
+	outputCSS embed.FS
 )
+
+func serveContentHandler(w http.ResponseWriter, r *http.Request) {
+	file, err := os.Open("example.txt")
+	if err != nil {
+		http.Error(w, "File not found", http.StatusNotFound)
+		return
+	}
+	defer file.Close()
+
+	fileInfo, err := file.Stat()
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	http.ServeContent(w, r, fileInfo.Name(), fileInfo.ModTime(), file)
+}
 
 func main() {
 	userHomeDir, err := os.UserHomeDir()
@@ -41,9 +63,27 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-  defer DB.Close()
-  DB.SetMaxOpenConns(1)
+	defer DB.Close()
+	DB.SetMaxOpenConns(1)
+
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /output.css", func(w http.ResponseWriter, r *http.Request) {
+		f, err := outputCSS.Open("output.css")
+		if err != nil {
+			http.Error(w, "File not found", http.StatusNotFound)
+			return
+		}
+		defer f.Close()
+		http.ServeFileFS(w, r, outputCSS, "output.css")
+	})
+	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+		template, err := template.ParseFiles("./index.html")
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
+		template.Execute(w, nil)
+	})
 
 	server := http.Server{
 		Addr:         fmt.Sprintf(":%d", *port),

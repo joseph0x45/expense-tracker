@@ -2,7 +2,7 @@ import { useState } from "react"
 import Account from "../components/Account"
 
 export default function Home() {
-  let [accounts, setAccounts] = useState(Array<Account>)
+  let [accounts, setAccounts] = useState<Array<Account>>([])
   return (
     <main className="mx-auto w-1/2 h-screen ">
       <div className="py-8">
