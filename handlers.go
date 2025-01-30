@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -28,7 +29,8 @@ func renderHomePage(w http.ResponseWriter, _ *http.Request) {
 	}
 	data, err := getAllAccounts()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err.Error())
+		http.Error(w, "Something went wrong. Check logs for more info", http.StatusInternalServerError)
 		return
 	}
 	template.Execute(w, map[string]interface{}{
@@ -38,13 +40,13 @@ func renderHomePage(w http.ResponseWriter, _ *http.Request) {
 
 func handleAccountCreation(w http.ResponseWriter, r *http.Request) {
 	label := r.FormValue("label")
-	threshold := r.FormValue("threshold")
-	thresholdInt, _ := strconv.Atoi(threshold)
+	threshold, _ := strconv.Atoi(r.FormValue("threshold"))
+	initialBalance, _ := strconv.Atoi(r.FormValue("balance"))
 	account := &Account{
 		ID:        ulid.Make().String(),
 		Label:     label,
-		Balance:   0,
-		Threshold: thresholdInt,
+		Balance:   initialBalance,
+		Threshold: threshold,
 	}
 	_, err := createAccount(account)
 	if err != nil {
@@ -72,4 +74,16 @@ func handleAccountCreation(w http.ResponseWriter, r *http.Request) {
 		</a> 
   `))
 	return
+}
+
+func renderTransactionsPage(w http.ResponseWriter, r *http.Request) {
+	// accountID := r.PathValue("accountID")
+	// if accountID == "" {
+	// 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
+	// 	return
+	// }
+	// account, err := getAccountByID(accountID)
+	// if err != nil {
+	// 	log.Println(err.Error())
+	// }
 }

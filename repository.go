@@ -1,6 +1,8 @@
 package main
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 )
 
@@ -27,4 +29,19 @@ func createAccount(account *Account) (string, error) {
 		return "", fmt.Errorf("Error while creating new account: %w", err)
 	}
 	return account.ID, nil
+}
+
+func getAccountByID(id string) (*Account, error) {
+	const query = `
+    select * from accounts where id=$1
+  `
+	account := &Account{}
+	err := DB.Get(account, query, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("Error while getting account by ID: %w", err)
+	}
+	return account, nil
 }

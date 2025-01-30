@@ -17,10 +17,13 @@
   <div class="flex flex-col gap-8">
     <form hx-post="/api/accounts" hx-target="#accounts-list" hx-swap="beforeend" class="flex gap-2">
       <input required name="label" type="text"
-        class="flex-[3] rounded-md border-1 border-gray-300 p-2 focus:outline-none" placeholder="Account label" />
+        class="flex-[2] rounded-md border-1 border-gray-300 p-2 focus:outline-none" placeholder="Label" />
       <input required inputmode="numeric" min="100" pattern="" name="threshold" type="number" step="100"
-        class="flex-[2] rounded-md border-1 border-gray-300 p-2 focus:outline-none"
-        placeholder="Account balance threshold" />
+        class="flex rounded-md border-1 border-gray-300 p-2 focus:outline-none"
+        placeholder="Minimum balance" />
+      <input required inputmode="numeric" min="0" pattern="" name="balance" type="number" step="100"
+        class="flex rounded-md border-1 border-gray-300 p-2 focus:outline-none"
+        placeholder="Initial Balance" />
       <button type="submit"
         class="cursor-pointer flex justify-center items-center gap-2 flex-[1] bg-black text-white rounded-md p-2">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
@@ -49,6 +52,11 @@
 </body>
 <script>
   document.addEventListener("htmx:beforeSwap", function (event) {
+    if (!event.detail.serverResponse.includes("error-message")){
+      document.querySelectorAll("input").forEach((i)=>{
+        i.value = ""
+      })
+    }
     const errorDiv = document.getElementById("error-message");
     if (errorDiv) {
       errorDiv.remove();

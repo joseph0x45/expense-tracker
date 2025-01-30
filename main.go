@@ -72,6 +72,7 @@ func main() {
 	mux.HandleFunc("GET /output.css", serveCSS)
 	mux.HandleFunc("GET /", renderHomePage)
 	mux.HandleFunc("POST /api/accounts", handleAccountCreation)
+	mux.HandleFunc("GET /accounts/{accountID}/transactions", renderTransactionsPage)
 
 	server := http.Server{
 		Addr:         fmt.Sprintf(":%d", *port),
